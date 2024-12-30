@@ -1,0 +1,23 @@
+
+Resize GIF
+
+first calculate the target width and height, you can also use neighbor for upscaling instead of lanczos
+
+ffmpeg -hide_banner -loglevel warning -i ${source_file} -filter_complex "[0:v] scale=${target_sizes.width}:${target_sizes.height}:flags=lanczos,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse" ${target_resized}
+
+
+
+Convert GIF to MP4
+
+ffmpeg -i 339.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -c:v libx264 -preset slow -crf 17 -c:a copy out.mp4
+
+Using pix_fmt to set the pixel format to yuv420p which is 4:2:0 chroma
+subsampling. This has higher compatibility compared to the default newer
+format. While VLC can play the new one fine my Chrome browser has large
+visual decoding errors with the default format.
+
+The default quality doesn't look that good so I use -preset slow -crf 17
+to get better quality.
+
+Some video formats require the video to have dimensions divisible by 2
+so the input is scaled down to the closest even size.

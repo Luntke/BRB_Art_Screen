@@ -1,0 +1,1 @@
+let submissions = [];let forced_background_color = {};

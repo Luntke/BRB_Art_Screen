@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Create Submission File</title>
+	
+	<meta name="referrer" content="origin">
+	<meta name="author" content="Merlin Luntke, Twitch Lazy_Luc"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<meta name="theme-color" content="#292929"/>
+	<meta name="robots" content="noindex, nofollow"/>
+	
+	<!--
+	<link rel="shortcut icon" sizes="16x16" href="/images/favicon_16.png"/>
+	<link rel="shortcut icon" sizes="32x32" href="/images/favicon_32.png"/>
+	<link rel="shortcut icon" sizes="48x48" href="/images/favicon_48.png"/>
+	<link rel="shortcut icon" sizes="64x64" href="/images/favicon_64.png"/>
+	<link rel="shortcut icon" sizes="96x96" href="/images/favicon_96.png"/>
+	<link rel="shortcut icon apple-touch-icon" sizes="144x144" href="/images/favicon_144.png"/>
+	<link rel="shortcut icon apple-touch-icon" sizes="192x192" href="/images/favicon_192.png"/>
+	-->
+	<link rel="shortcut icon" sizes="32x32" href="./favicon_32.png"/>
+	<!--
+	<link rel="preload" as="font" href="./fonts/Kalam/Kalam-Jerma-Subset.ttf" crossorigin>
+	<link rel="preload" as="font" href="./fonts/Maven_Pro/static/MavenPro-Regular.ttf" crossorigin>
+	-->
+</head>
+<body>
+
+
+<script src="./data/file_data_v2.js"></script>
+<script src="./gallery_list.js"></script>
+<script src="./submission_ratings.js"></script>
+
+<script>
+//file_data: {
+//    [base_name]: {
+//        base_name: [String]
+//            The base name of the source image.
+//        extension: [String]
+//            The file extension of the source image, for example "png", "jpg"
+//            or "webm".
+//        width: [Number]
+//            The width of the video or image.
+//        height: [Number]
+//            The height of the video or image.
+//        size: [Number]
+//            The size of the file in bytes.
+//        modification_time: [Number]
+//            The most recent time the source file is set to have been modified
+//            in Unix time in milliseconds.
+//        average_color: [Array]
+//            The average color of the image or first from of the animation as
+//            an array with the RGB values.
+//            
+//            Example: [199, 174, 122]
+//    },
+//    ...
+//}
+
+//submissions = [
+//    {
+//        user: [String]
+//        id: [Number]
+//        description: [String]
+//    },
+//    ...
+//}
+
+//forced_background_color = {
+//    [base_name]: [Array]
+//        The key is the base name of the file and the value is the background
+//        color to use for that file instead of the average color. The color is
+//        defined as an RGB array.
+//        
+//        Example:
+//            "68": [165, 102, 50]
+//}
+
+
+
+//  Functions  //
+
+//Copied from Stackoverflow:
+//    https://stackoverflow.com/a/5624139
+let component_to_hex = function(number){
+	let hex = number.toString(16);
+	
+	if(hex.length === 1){
+		return ("0" + hex);
+	}
+	
+	return hex;
+};
+
+let rgb_to_hex = function(r, g, b){
+	return (
+		"#"
+		+ component_to_hex(r)
+		+ component_to_hex(g)
+		+ component_to_hex(b)
+	);
+};
+
+let hasOwnProperty = function(object, property){
+	return Object.prototype.hasOwnProperty.call(object, property);
+};
+
+
+"use strict";
+//
+//    Get Formatting Object
+//
+//The given string can have formatting blocks similar to HTML elements, but it's
+//save for the string to contain any HTML. Only the allowed blocks have
+//functionality. The returned object has the properties "node" and "is_valid".
+//If "is_valid" is not true then the node has no formatting and the text is
+//equal to the given string including any formatting text.
+//
+//
+//These are the allowed formatting blocks:
+//    "b"
+//        Draws the text bold.
+//    "i"
+//        Draws the text italicized.
+//    "s"
+//        Draws the text with a strikethrough.
+//
+//Examples:
+//    get_formatting_object("<b>This is bold.</b>")
+//        All of the text is bold.
+//    get_formatting_object("<i>This is <s>terrible</s> <b>cool</b></i> :)")
+//        Most of the text is italicized, the word "terrible" has a
+//        strikethrough and the word "cool" is bold.
+//
+
+let get_formatting_object = function(string){
+	//  Variables  //
+	
+	let block_type_to_html_element = {
+		"b": "b",
+		"i": "i",
+		"s": "s"
+	};
+	let block_types = Object.keys(block_type_to_html_element);
+	let block_regex = new RegExp(`<(\\/)?(${block_types.join("|")})>`, "g");
+	
+	
+	//  Find Formatting Blocks  //
+	
+	let matched_blocks = [];
+	
+	for(let match of string.matchAll(block_regex)){
+		let object = {
+			type: block_type_to_html_element[match[2]],
+			is_closing: false,
+			index_start: match.index,
+			index_end: (match.index + match[0].length)
+		};
+		
+		if(match[1] !== undefined){
+			object.is_closing = true;
+		}
+		
+		matched_blocks.push(object);
+	}
+	
+	
+	//  Check Validity  //
+	
+	let type_stack = [];
+	let is_valid = true;
+	
+	//This checks whether or not the blocks are opened and closed in the correct
+	//order.
+	for(let block of matched_blocks){
+		if(block.is_closing === false){
+			type_stack.push(block.type);
+		} else {
+			if(type_stack.length > 0
+			&& type_stack[type_stack.length - 1] === block.type){
+				type_stack.pop();
+			} else {
+				is_valid = false;
+				break;
+			}
+		}
+	}
+	
+	//All opened blocks have to close.
+	if(type_stack.length > 0){
+		is_valid = false;
+	}
+	
+	
+	if(is_valid !== true){
+		let div = document.createElement("div");
+		let text = document.createTextNode(string);
+		div.appendChild(text);
+		
+		return ({
+			node: div,
+			is_valid: false
+		});
+	}
+	
+	
+	//  Create Output  //
+	
+	let div = document.createElement("div");
+	let parent = div;
+	let index = 0;
+	
+	for(let block of matched_blocks){
+		let string_part = string.substring(index, block.index_start);
+		let text = document.createTextNode(string_part);
+		parent.appendChild(text);
+		
+		index = block.index_end;
+		
+		if(block.is_closing === false){
+			let element = document.createElement(block.type);
+			parent.appendChild(element);
+			
+			parent = element;
+		} else {
+			parent = parent.parentElement;
+		}
+	}
+	
+	
+	if(index < string.length){
+		let string_part = string.substring(index, string.length);
+		let text = document.createTextNode(string_part);
+		parent.appendChild(text);
+	}
+	
+	
+	//  Return  //
+	
+	return ({
+		node: div,
+		is_valid: true
+	});
+};
+
+
+//  Compiling  //
+
+(function(){
+	//  Match Submissions To Good Rated Order  //
+	/*
+	let good_order = submission_ratings.output_order;
+	let submission_map = new Map();
+	let fixed_submissions = [];
+	
+	for(let submission of submissions){
+		submission_map.set(submission.id, submission);
+	}
+	
+	for(let i = 0;i < good_order.length;i += 1){
+		let id = good_order[i];
+		
+		if(!submission_map.has(id)){
+			throw new Error(`There is no submission with the ID ${id} which is found in the good rated submissions.`);
+		}
+		
+		fixed_submissions[i] = submission_map.get(id);
+	}
+	
+	
+	submissions = fixed_submissions;
+	*/
+	
+	
+	//  Check Submissions Are Valid  //
+	
+	let used_submission_ids = new Set();
+	
+	for(let submission of submissions){
+		if(typeof submission.id !== "number"){
+			console.log("Submission ID is not a number.", submission);
+		}
+		if(used_submission_ids.has(submission.id)){
+			console.log("Submission has a duplicate ID.", submission);
+			return;
+		}
+		used_submission_ids.add(submission.id);
+		
+		if(typeof submission.user !== "string"
+		|| submission.user.length === 0){
+			console.log("Submission has invalid user name.", submission);
+			return;
+		}
+		
+		if(typeof submission.description !== "string"){
+			console.log("Submission has invalid description.", submission);
+			return;
+		} else {
+			let object = get_formatting_object(submission.description);
+			
+			if(object.is_valid !== true){
+				console.log("Submission has invalid description formatting.", submission);
+				return;
+			}
+		}
+	}
+	
+	
+	//  Merge Submission Data With File Data  //
+	
+	for(let submission of submissions){
+		if(!hasOwnProperty(file_data, submission.id)){
+			console.log("Submission has no file data.", submission);
+			return;
+		}
+		
+		let data = file_data[submission.id];
+		
+		Object.assign(submission, data);
+	}
+	
+	
+	//  Force Background Colors  //
+	
+	let background_colors_hex = {};
+	
+	for(let id in forced_background_color){
+		if(used_submission_ids.has(Number(id))){
+			background_colors_hex[id] = (
+				rgb_to_hex(
+					...forced_background_color[id]
+				).substring(1)
+			);
+		}
+	}
+	
+	
+	//  Compile Data  //
+	
+	let extension_to_number = {
+		"png": 0,
+		"jpg": 1,
+		"gif": 2,
+		"webm": 3,
+		"mp4": 4
+	};
+	
+	let submissions_compressed = [];
+	
+	
+	/*
+	0: id
+	1: user
+	2: description
+	3: extension
+	4: average_color
+	*/
+	for(let submission of submissions){
+		let array = [];
+		
+		array[0] = submission.id;
+		array[1] = submission.user;
+		array[2] = submission.description;
+		array[3] = extension_to_number[submission.extension];
+		array[4] = rgb_to_hex(...submission.average_color).substring(1);
+		
+		submissions_compressed.push(array);
+	}
+	
+	
+	console.log(submissions_compressed);
+	console.log(background_colors_hex);
+	
+	let submission_file_content = (
+		`let submissions = ${JSON.stringify(submissions_compressed)};` +
+		`let forced_background_color = ${JSON.stringify(background_colors_hex)};`
+	);
+	
+	console.log(submission_file_content);
+})();
+
+
+
+
+</script>
+
+
+</body>
+</html>

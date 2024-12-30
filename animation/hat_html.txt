@@ -1,0 +1,229 @@
+
+	Hat HTML
+
+This is the code used in the HTML for the hats. It also includes the previous
+and next line to know where it belongs.
+
+
+
+	None
+/*
+<div id="animation_paint_can"></div>
+<svg id="transition_svg" width="1080" height="720" xmlns="http://www.w3.org/2000/svg">
+*/
+
+	Santa
+
+/*
+<div id="animation_paint_can"></div>
+<svg id="hat_layer" width="150" height="150" xmlns="http://www.w3.org/2000/svg">
+	<path id="hat_area" d="M 138 25 Q 91 7 65 33 S 25 79 64 112 Q 62 55 86 58 L108 46 Z"></path>
+	<path id="hat_brim" d="M 138 25 L139 29 L137 34 L134 36 L129 37 L131 41 L128 44 L123 47 L117 46 L116 53 L111 56 L104 55 L102 61 L97 64 L91 63 L88 69 L83 72 L80 70 L80 67 L75 67 L75 61 L76 57 L81 52 L85 51 L86 46 L90 42 L95 42 L96 44 L95 37 L99 32 L103 31 L109 32 L109 36 L111 28 L116 25 L120 26 L122 28 L124 23 L129 20 L132 21 L133 26 L137 23 Z"></path>
+	<path id="hat_peak" d="M 58 104 L62 107 L63 109 L68 106 L71 108 L71 111 L68 112 L74 113 L74 116 L71 119 L68 121 L67 124 L64 125 L60 121 L57 125 L52 123 L50 119 L50 115 L53 113 L53 109 L54 105 Z"></path>
+	<path id="hat_debug" d="" style="fill: rgb(0 0 0);display: none;"></path>
+</svg>
+<svg id="transition_svg" width="1080" height="720" xmlns="http://www.w3.org/2000/svg">
+*/
+
+
+	Artist
+
+/*
+
+
+<div id="animation_paint_can"></div>
+<svg id="hat_layer" width="150" height="150" xmlns="http://www.w3.org/2000/svg" style="
+    top: 100px;
+    left: 1080px;
+    position: absolute;
+    z-index: 10024;
+    /* display: none; */
+    transform-origin: 39px 88px;
+    transform: rotate(45deg);
+">
+	<path id="hat_area" d="M 10 111 S 7 104 19 92 S 29 85 35 81 S 46 75 50 73 S 57 70 63 68 S 79 67 56 86 S 46 90 19 112 Q 14 116 10 111 Z" style="
+    fill: #3a3f3f;
+    stroke: #1f2222;
+    stroke-width: 2.5px;
+    /* opacity: 0.5; */
+"></path>
+	
+	<path id="hat_peak" d="M 32 82 S 27 83 28 76 S 36 74 33 81 Z" style="
+    /* display: none; */
+    /* opacity: 0.5; */
+    fill: #1f2222;
+    stroke: #1f222200;
+    stroke-width: 0px;
+"></path>
+	<path id="hat_debug" d="" style="fill: rgb(0 0 0);display: none;"></path>
+</svg>
+<svg id="transition_svg" width="1080" height="720" xmlns="http://www.w3.org/2000/svg">
+
+*/
+
+
+
+
+
+
+	SVG Editor Code
+
+
+	Simple Lines
+
+
+let svg_edit_node = $0;
+let svg_debug_node = document.querySelector("#hat_debug");
+
+document.body.onclick = function(event){
+	let x = (event.offsetX - 10);
+	let y = (event.offsetY - 100);
+	
+	let d = svg_edit_node.getAttribute("d");
+	
+	if(d.length === 0
+	|| event.ctrlKey === true){
+		//Start new path
+		
+		svg_edit_node.setAttribute("d", (`${d} M ${x} ${y}`));
+	} else if(event.shiftKey === true){
+		//Remove last element from path
+		
+		let parts = d.split(" ");
+		parts.length = (parts.length - 3);
+		
+		svg_edit_node.setAttribute("d", d);
+	} else {
+		//Add line to path
+		
+		svg_edit_node.setAttribute("d", (`${d} L ${x} ${y}`));
+	}
+};
+
+
+
+
+	Curves with Editing
+
+
+
+let svg_edit_node = $0;
+let svg_debug_node = document.querySelector("#hat_debug");
+
+let svg_edit_parts = [];
+
+
+let update_edit_node = function(){
+	let string = get_svg_string();
+	svg_edit_node.setAttribute("d", string);
+};
+
+let get_svg_string = function(){
+	let string = "";
+	let parts = svg_edit_parts;
+	
+	if(parts.length > 0){
+		string += (
+			"M " + parts[0][0] + " " + parts[0][1] + " "
+		);
+		
+		for(let i = 1;(i + 1) < parts.length;i += 2){
+			string += (
+				"S " + parts[i + 1][0] + " " + parts[i + 1][1] + " " +
+				     + parts[i + 0][0] + " " + parts[i + 0][1] + " "
+			);
+		}
+		
+		if(parts.length % 2 === 0){
+			let last_index = (parts.length - 1);
+			
+			string += (
+				"L " + parts[last_index][0] + " " + parts[last_index][1] + " "
+			);
+		}
+		
+		string += "Z";
+	}
+	
+	return string;
+};
+
+
+let get_parts_from_string = function(){
+	
+};
+
+
+let get_closest_index = function(x, y){
+	let get_distance = function(x_2, y_2){
+		return Math.sqrt(
+			(x - x_2) ** 2 +
+			(y - y_2) ** 2
+		);
+	};
+	
+	let distance = Infinity;
+	let index = -1;
+	
+	for(let i = 0;i < svg_edit_parts.length;i += 1){
+		let current_distance = get_distance(...svg_edit_parts[i]);
+		
+		//Give priority to newer points.
+		if(current_distance <= distance){
+			distance = current_distance;
+			index = i;
+		}
+	}
+	
+	return index;
+};
+
+
+
+
+document.body.onclick = function(event){
+	let x = (event.offsetX - 10);
+	let y = (event.offsetY - 100);
+	
+	let d = svg_edit_node.getAttribute("d");
+	
+	if(d.length === 0
+	|| event.ctrlKey === true){
+		svg_edit_parts.push([x, y]);
+		
+	} else if(event.shiftKey === true){
+		//Move closest point
+		let closest_index = get_closest_index(x, y);
+		
+		if(closest_index >= 0){
+			svg_edit_parts[closest_index] = [x, y];
+		}
+		
+	} else {
+		//Add line to path
+		
+		svg_edit_parts.push([x, y]);
+	}
+	
+	
+	update_edit_node();
+};
+
+let svg_on_context_menu = function(event){
+	if(event.shiftKey !== true){
+		return;
+	}
+	
+	event.preventDefault();
+	
+	
+	//Remove last element from path
+	svg_edit_parts.length = (svg_edit_parts.length - 1);
+	
+	update_edit_node();
+};
+
+document.body.addEventListener("contextmenu", function(event){
+	svg_on_context_menu.call(this, event);
+});
+

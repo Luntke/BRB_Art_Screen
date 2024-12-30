@@ -1,0 +1,3 @@
+DirectoryIndex brb_gallery.php
+
+ErrorDocument 404 /index.php

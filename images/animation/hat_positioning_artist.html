@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Empty page</title>
+</head>
+<body>
+
+<style>
+body {
+	margin: 0px;
+	padding: 0px;
+}
+
+#pos_node,
+#hat_node,
+#map_node {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 6400px;
+	height: 2080px;
+}
+
+#pos_node {
+	z-index: 3;
+}
+
+#map_node {
+	z-index: 2;
+	background-image: url("animation_map_hatless_v1.png");
+    image-rendering: pixelated;
+}
+
+#pos_node > div {
+	position: absolute;
+	background-color: #ff0000;
+	width: 30px;
+	height: 30px;
+	opacity: 0.5;
+}
+
+
+#hat_node > div {
+	z-index: 1;
+	position: absolute;
+	background-image: url("artist_hat.png");
+    image-rendering: pixelated;
+	width: 150px;
+	height: 150px;
+    transform-origin: 84px 63px;
+    transform-origin: 23px 114px;
+    transform: rotate(0deg);
+}
+
+
+
+
+
+
+#animation_parent {
+	display: none;
+	position: absolute;
+	z-index: 4;
+	top: 0px;
+	left: 0px;
+	width: 1280px;
+	height: 720px;
+	background-color: #8c2f72;
+}
+
+#germ_layer {
+	position: absolute;
+	z-index: 2;
+	top: 0px;
+	right: 0px;
+	height: 0px;
+	width: 0px;
+	background-image: url("animation_map_hatless_v1.png");
+    image-rendering: pixelated;
+	
+	/*z-index: 2;
+	opacity: 0.5;*/
+}
+/*
+#hat_layer {
+	position: absolute;
+	z-index: 1;
+	top: 0px;
+	left: 0px;
+	height: 150px;
+	width: 150px;
+	background-image: url("santa_hat.png");
+    image-rendering: pixelated;
+    transform-origin: 84px 63px;
+    transform: rotate(0deg);
+}
+*/
+
+#hat_layer,
+#hat_peak {
+	/*  Painter Hat  */
+    transform-origin: 23px 114px;
+}
+
+#hat_layer {
+	position: absolute;
+	z-index: 1;
+	top: 0px;
+	left: 0px;
+	height: 150px;
+	width: 150px;
+	/*background-image: url("santa_hat.png");*/
+    image-rendering: pixelated;
+    transform: rotate(0deg);
+    stroke-width: 5px;
+    stroke-miterlimit: 0;
+}
+
+#hat_brim,
+#hat_peak {
+	stroke: rgb(175, 225, 243);
+	fill: rgb(214, 237, 245);
+}
+#hat_area {
+	stroke: #882525;
+    stroke: #9c1a1a;
+	fill: rgb(202 21 21);
+}
+</style>
+
+
+<div id="pos_node"></div>
+<div id="hat_node"></div>
+<div id="map_node"></div>
+
+<div id="animation_parent">
+	<div id="germ_layer"></div>
+	<svg id="hat_layer" width="150" height="150" xmlns="http://www.w3.org/2000/svg" style="
+	    /*top: 100px;*/
+	    /*left: 1080px;*/
+	    /*position: absolute;*/
+	    /*z-index: 10024;*/
+	    /* display: none; */
+	    /*transform-origin: 39px 88px;*/
+	    /*transform: rotate(45deg);*/
+	">
+		<path id="hat_area" d="M 10 111 S 7 104 19 92 S 29 85 35 81 S 46 75 50 73 S 57 70 63 68 S 79 67 56 86 S 46 90 19 112 Q 14 116 10 111 Z" style="
+	    fill: #3a3f3f;
+	    stroke: #1f2222;
+	    stroke-width: 2.5px;
+	    /* opacity: 0.5; */
+	"></path>
+		
+		<path id="hat_peak" d="M 32 82 S 27 83 28 76 S 36 74 33 81 Z" style="
+	    /* display: none; */
+	    /* opacity: 0.5; */
+	    fill: #1f2222;
+	    stroke: #1f222200;
+	    stroke-width: 0px;
+	"></path>
+		<path id="hat_debug" d="" style="fill: rgb(0 0 0);display: none;"></path>
+	</svg>
+</div>
+
+
+<script>
+let eyes = [];
+
+//The order is idle, idle blink, painting
+eyes = [[23,114],[64,91],[223,102],[264,79],[423,93],[464,70],[623,90],[664,67],[823,88],[864,65],[1023,90],[1064,67],[1223,100],[1264,77],[1423,108],[1464,85],[1623,117],[1664,94],[1823,120],[1864,97],[2023,90],[2064,67],[2223,90],[2264,67],[2423,100],[2464,77],[2623,100],[2664,77],[2823,113],[2864,90],[3026,118],[3064,91],[3229,124],[3267,97],[3428,124],[3466,97],[3628,123],[3666,96],[3828,123],[3866,96],[4026,121],[4064,94],[4224,119],[4262,92],[4424,112],[4465,89],[4627,112],[4669,90],[6225,1531],[6261,1502],[1095,976],[1131,947],[2372,985],[2408,955],[3657,986],[3693,956],[5059,532],[5095,503],[5058,984],[5094,955],[3970,1695],[4006,1666],[841,1704],[877,1675],[1864,1706],[1900,1677],[2674,1708],[2710,1679],[6140,536],[6176,507],[5242,1633],[5278,1604],[6220,1097],[6256,1068],[421,531],[457,502],[1020,535],[1056,506],[1615,533],[1651,504],[2218,532],[2254,503],[2816,533],[2852,504],[3137,532],[3173,503],[3458,534],[3494,505],[3782,534],[3818,505],[4820,135],[4856,106],[5020,132],[5056,103],[5219,129],[5255,100],[5418,133],[5454,104],[5621,126],[5657,97]];
+
+/*
+document.body.onclick = function(event){
+	console.log(event);
+	let x = event.pageX;
+	let y = event.pageY;
+	
+	if(event.shiftKey === true){
+		if(eyes.length > 0){
+			eyes.length = (eyes.length - 1);
+			pos_node.removeChild(pos_node.lastChild);
+		}
+	} else if(event.ctrlKey === true){
+		eyes[eyes.length - 1] = [x, y];
+		
+		pos_node.lastChild.style.top = (y + "px");
+		pos_node.lastChild.style.left = (x + "px");
+	} else {
+		eyes.push([x, y]);
+		let div = document.createElement("div");
+		pos_node.appendChild(div);
+		div.style.top = (y + "px");
+		div.style.left = (x + "px");
+	}
+};*/
+
+let place_santa_hats = function(){
+	while(hat_node.lastChild){
+		hat_node.removeChild(hat_node.lastChild);
+	}
+	
+	for(let i = 0;i < eyes.length;i += 2){
+		let left_eye_x = eyes[i + 0][0];
+		let left_eye_y = eyes[i + 0][1];
+		let right_eye_x = eyes[i + 1][0];
+		let right_eye_y = eyes[i + 1][1];
+		
+		let div = document.createElement("div");
+		
+		//Santa Hat
+		div.style.top = (left_eye_y - 108 + "px");
+		div.style.left = (left_eye_x - 23 + "px");
+		
+		/*
+		//Painter Hat
+		div.style.top = (left_eye_y + "px");
+		div.style.left = (left_eye_x + "px");
+		*/
+		
+		let d_x = (right_eye_x - left_eye_x);
+		let d_y = (right_eye_y - left_eye_y);
+		
+		div.style.transform = ("rotate(" + (Math.atan(d_y / d_x) / (2 * Math.PI) * 360 + 29.291437829015738) + "deg)");
+		
+		hat_node.appendChild(div);
+	}
+};
+
+place_santa_hats();
+
+
+/*
+//Calculates the angle of the eyes in every frame. Important in the creation of a sprite sheet
+//with existing angles.
+(function(){
+    let angles = [];
+    
+	for(let i = 0;i < eyes.length;i += 2){
+		let left_eye_x = eyes[i + 0][0];
+		let left_eye_y = eyes[i + 0][1];
+		let right_eye_x = eyes[i + 1][0];
+		let right_eye_y = eyes[i + 1][1];
+		
+		let d_x = (right_eye_x - left_eye_x);
+		let d_y = (right_eye_y - left_eye_y);
+		
+		angles.push(Math.atan(d_y / d_x) / (2 * Math.PI) * 360 + 29.2914);
+	}
+    
+    return angles;
+})();
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let sine_i = 0;
+//The result is being rounded to the nearest whole number as OBS, unlike normal
+//browsers, doesn't translate images to subpixel accuracy.
+let get_sine_translate = function(i){
+	let total_frames = 40;
+	
+	let translate = Math.round(
+		- 10
+		+ 6 * Math.sin(2 * Math.PI * ((sine_i + 10) / total_frames))
+	);
+	
+	sine_i = ((sine_i + 1) % total_frames);
+	
+	return translate;
+};
+
+
+let hat_width = 150;
+let hat_height = 150;
+
+//These are the values of the indices:
+//    0: width
+//    1: height
+//    2: map_x
+//    3: map_y
+//    4: offset_y
+//    5: hat_id
+//    6: hat_offset_x
+//    7: hat_offset_y
+//    8: hat_angle
+let frame_sheet = [
+	//Idle
+	
+	//0 - 9
+	[200,300,0,0,100 + 0, 0],
+	[200,300,200,0,100 + 12, 0],
+	[200,300,400,0,100 + 21, 0],
+	[200,300,600,0,100 + 24, 0],
+	[200,300,800,0,100 + 26, 0],
+	[200,300,1000,0,100 + 24, 0],
+	[200,300,1200,0,100 + 14, 0],
+	[200,300,1400,0,100 + 6, 0],
+	[200,300,1600,0,100 - 3, 0],
+	[200,300,1800,0,100 - 6, 0],
+	
+	
+	//Idle blink
+	
+	//10 - 13
+	[200,300,2000,0,100 + 24, 0],
+	[200,300,2200,0,100 + 24, 0],
+	[200,300,2400,0,100 + 14, 0],
+	[200,300,2600,0,100 + 14, 0],
+	
+	
+	//Painting
+	
+	//14 - 19
+	[200,300,2800,0,100, 0],
+	[200,300,3000,0,100, 1],
+	[200,300,3200,0,100, 2],
+	[200,300,3400,0,100, 3],
+	[200,300,3600,0,100, 3],
+	[200,300,3800,0,100, 3],
+	
+	//20 - 29
+	[200,300,4000,0,100, 3],
+	[200,300,4200,0,100, 3],
+	[200,300,4400,0,100, 3],
+	[200,300,4600,0,100, 0],
+	[800,720,5600,1310,0, 0],
+	[1280,720,0,750,0, 0],
+	[1280,720,1280,750,0, 0],
+	[1280,500,2560,750,0, 0],
+	[1280,450,3960,300,0, 0],
+	[1280,450,3960,750,0, 0],
+	
+	//30 - 39
+	[1280,450,2872,1463,0, 0],
+	[1024,600,0,1470,0, 0],
+	[1024,600,1024,1470,0, 0],
+	[770,600,2089,1470,0, 0],
+	[1024,600,5300,300,0, 0],
+	[1024,600,4400,1400,0, 0],
+	[1024,500,5376,864,0, 0],
+	[600,450,0,300,0, 0],
+	[600,450,600,300,0, 0],
+	[600,450,1200,300,0, 0],
+	
+	//40 - 49
+	[600,450,1800,300,0, 0],
+	[600,450,2400,300,0, 0],
+	[320,450,3000,300,0, 0],
+	[320,450,3320,300,0, 0],
+	[320,450,3640,300,0, 0],
+	[200,300,4800,0,100, 0],
+	[200,300,5000,0,100, 0],
+	[200,300,5200,0,100, 0],
+	[200,300,5400,0,100, 0],
+	[200,300,5600,0,100, 0]
+];
+
+let eye_data = [[23,114],[64,91],[223,102],[264,79],[423,93],[464,70],[623,90],[664,67],[823,88],[864,65],[1023,90],[1064,67],[1223,100],[1264,77],[1423,108],[1464,85],[1623,117],[1664,94],[1823,120],[1864,97],[2023,90],[2064,67],[2223,90],[2264,67],[2423,100],[2464,77],[2623,100],[2664,77],[2823,113],[2864,90],[3026,118],[3064,91],[3229,124],[3267,97],[3428,124],[3466,97],[3628,123],[3666,96],[3828,123],[3866,96],[4026,121],[4064,94],[4224,119],[4262,92],[4424,112],[4465,89],[4627,112],[4669,90],[6225,1531],[6261,1502],[1095,976],[1131,947],[2372,985],[2408,955],[3657,986],[3693,956],[5059,532],[5095,503],[5058,984],[5094,955],[3970,1695],[4006,1666],[841,1704],[877,1675],[1864,1706],[1900,1677],[2674,1708],[2710,1679],[6140,536],[6176,507],[5242,1633],[5278,1604],[6220,1097],[6256,1068],[421,531],[457,502],[1020,535],[1056,506],[1615,533],[1651,504],[2218,532],[2254,503],[2816,533],[2852,504],[3137,532],[3173,503],[3458,534],[3494,505],[3782,534],[3818,505],[4820,135],[4856,106],[5020,132],[5056,103],[5219,129],[5255,100],[5418,133],[5454,104],[5621,126],[5657,97]];
+
+//frame_sheet
+//    0: width
+//    1: height
+//    2: map_x
+//    3: map_y
+//    4: offset_y
+//    5: hat_id
+//    6: hat_offset_x
+//    7: hat_offset_y
+//    8: hat_angle
+(function(){
+	for(let i = 0;i < eyes.length;i += 2){
+		let frame_data = frame_sheet[i / 2];
+		
+		let left_eye_x = eye_data[i + 0][0];
+		let left_eye_y = eye_data[i + 0][1];
+		let right_eye_x = eye_data[i + 1][0];
+		let right_eye_y = eye_data[i + 1][1];
+		
+		
+		//These are the relative position to the top left of the germ sprite
+		//sheet.
+		let hat_top = (left_eye_y - 108);
+		let hat_left = (left_eye_x - 23);
+		
+		//These are relative to the germ sprite.
+		let hat_offset_x = (
+			hat_left - frame_data[2] + (1280 - frame_data[0])
+		);
+		let hat_offset_y = (
+			hat_top - frame_data[3] + frame_data[4]
+		);
+		
+		
+		//Used to calculate the eye angle.
+		let d_x = (right_eye_x - left_eye_x);
+		let d_y = (right_eye_y - left_eye_y);
+		
+		//The angle is in degrees.
+		let hat_angle = (
+			Math.atan(d_y / d_x) / (2 * Math.PI) * 360
+			+ 29.291437829015738
+		);
+		
+		
+		frame_data[6] = hat_offset_x;
+		frame_data[7] = hat_offset_y;
+		frame_data[8] = hat_angle;
+	}
+})();
+
+
+let get_frame_info = function(frame_id, y_offset=0){
+	let data = frame_sheet[frame_id].slice();
+	let y_offset_index = 4;
+	let hat_offset_y_index = 7;
+	
+	data[y_offset_index] += y_offset;
+	data[hat_offset_y_index] += y_offset;
+	
+	return data;
+};
+
+
+//These are the values of the indices:
+//    0: width
+//    1: height
+//    2: map_x
+//    3: map_y
+//    4: offset_y
+//    5: hat_id
+//    6: hat_offset_x
+//    7: hat_offset_y
+//    8: hat_angle
+let map_data = {
+	idle: [
+		0,0,0,0,
+		1,1,1,1,
+		2,2,2,2,
+		3,3,3,3,
+		4,4,4,4,
+		5,5,5,5,
+		6,6,6,6,
+		7,7,7,7,
+		8,8,8,8,
+		9,9,9,9
+	],
+	idle_blink: [
+		0,0,0,0,
+		1,1,1,1,
+		2,2,2,2,
+		3,3,3,3,
+		4,4,4,4,
+		
+		10, 10, 11, 11,
+		12, 12, 13, 13,
+		
+		7,7,7,7,
+		8,8,8,8,
+		9,9,9,9
+	],
+	painting: [
+		get_frame_info(14),
+		null,
+		get_frame_info(15),
+		null,
+		get_frame_info(16),
+		null,
+		get_frame_info(17),
+		null,
+		get_frame_info(18),
+		get_frame_info(19),
+		null,
+		get_frame_info(20),
+		null,
+		get_frame_info(21),
+		null,
+		get_frame_info(22),
+		null,
+		get_frame_info(23),
+		null,
+		get_frame_info(24),
+		get_frame_info(25),
+		null,
+		get_frame_info(26),
+		get_frame_info(27),
+		get_frame_info(28),
+		get_frame_info(29),
+		null,
+		get_frame_info(30),
+		null,
+		get_frame_info(31),
+		get_frame_info(32),
+		get_frame_info(33),
+		get_frame_info(34),
+		get_frame_info(35),
+		get_frame_info(36),
+		null,
+		get_frame_info(37),
+		get_frame_info(38),
+		get_frame_info(39),
+		get_frame_info(40),
+		get_frame_info(41),
+		get_frame_info(42),
+		get_frame_info(43),
+		get_frame_info(44),
+		get_frame_info(45),
+		null,
+		get_frame_info(46),
+		null,
+		get_frame_info(47),
+		null,
+		get_frame_info(48),
+		null,
+		get_frame_info(49),
+		null,
+		get_frame_info(14),
+		
+		
+		get_frame_info(1, -1),
+			get_frame_info(1, -3),
+			get_frame_info(1, -5),
+			get_frame_info(1, -7),
+		get_frame_info(2, -8),
+			get_frame_info(2, -9),
+			get_frame_info(2, -10),
+			get_frame_info(2, -11)
+	]
+};
+
+(function(){
+	let idle = map_data.idle;
+	let idle_blink = map_data.idle_blink;
+	
+	for(let i = 0;i < idle.length;i += 1){
+		idle[i] = get_frame_info(idle[i], get_sine_translate());
+	}
+	for(let i = 0;i < idle_blink.length;i += 1){
+		idle_blink[i] = get_frame_info(idle_blink[i], get_sine_translate());
+	}
+})();
+
+
+
+
+
+let fps = 15;
+let frame_id = 0;
+let animation_name = undefined;
+let interval_id = undefined;
+
+let show_animation = function(){
+	animation_parent.style.display = "block";
+};
+let hide_animation = function(){
+	animation_parent.style.display = "none";
+};
+
+let draw_animations = function(){
+	animation_name = "idle";
+	frame_id = 0;
+	hat.reset_position();
+	show_animation();
+	
+	interval_id = setInterval(
+		draw_frame,
+		(1000 / 15)
+	);
+	
+	draw_frame();
+};
+
+let stop_animations = function(){
+	clearInterval(interval_id);
+			
+	animation_name = undefined;
+	interval_id = undefined;
+};
+
+let draw_frame = function(){
+	let map = map_data[animation_name];
+	let data = map[frame_id];
+	
+	if(data === null){
+		data = map[frame_id - 1];
+	}
+	
+	germ_layer.style.width = (data[0] + "px");
+	germ_layer.style.height = (data[1] + "px");
+	germ_layer.style.backgroundPositionX = (-data[2] + "px");
+	germ_layer.style.backgroundPositionY = (-data[3] + "px");
+	germ_layer.style.transform = ("translateY(" + data[4] + "px)");
+	
+	
+	//top in pixel
+	//left in pixel
+	//angle in dregrees
+	hat.set_position(
+		data[6],
+		data[7],
+		data[8]
+	);
+	
+	
+	frame_id += 1;
+	
+	if(frame_id >= map.length){
+		frame_id = 0;
+		
+		if(animation_name === "idle"){
+			animation_name = "idle_blink";
+		} else if(animation_name === "idle_blink"){
+			animation_name = "painting";
+		} else {
+			//stop_animations();
+			frame_id = 12;
+			animation_name = "idle";
+		}
+	}
+};
+
+
+
+
+let hat = null;
+
+
+(function(){
+	//  Variables  //
+	
+	let hat_node = document.querySelector("#hat_layer");
+	
+	let hat_brim = document.querySelector("#hat_brim");
+	let hat_area = document.querySelector("#hat_area");
+	let hat_peak = document.querySelector("#hat_peak");
+	
+	let pos_x = undefined;
+	let pos_y = undefined;
+	let angle = undefined;
+	
+	let offset_x = undefined;
+	let offset_y = undefined;
+	
+	let style_x = undefined;
+	let style_y = undefined;
+	let style_angle = undefined;
+	
+	
+	//  Functions  //
+	
+	let set_style = function(){
+		let new_x = Math.round(pos_x);
+		let new_y = Math.round(pos_y);
+		
+		style_x = new_x;
+		hat_node.style.left = (style_x + "px");
+		
+		
+		style_y = new_y;
+		hat_node.style.top = (style_y + "px");
+		
+		
+		style_angle = angle;
+		hat_node.style.transform = ("rotate(" + style_angle + "deg)");
+	};
+	
+	
+	//  Methods  //
+	
+	let set_position = function(new_x, new_y, new_angle){
+		if(pos_x === undefined){
+			pos_x = new_x;
+			pos_y = new_y;
+			angle = new_angle;
+			
+			offset_x = 0;
+			offset_y = 0;
+			
+			set_style();
+			return;
+		}
+		
+		
+		if(new_angle !== angle){
+			angle = new_angle;
+		}
+		
+		if(new_x !== pos_x){
+			pos_x = new_x;
+		}
+		if(new_y !== pos_y){
+			pos_y = new_y;
+		}
+		
+		set_style();
+	};
+	
+	let reset_position = function(){
+		pos_x = undefined;
+		pos_y = undefined;
+		angle = undefined;
+		
+		offset_x = undefined;
+		offset_y = undefined;
+	};
+	
+	
+	//  Return  //
+	
+	hat = ({
+		set_position: set_position,
+		reset_position: reset_position
+	});
+	
+})();
+
+
+
+//window.requestAnimationFrame(draw_animations);
+
+
+
+
+
+</script>
+
+
+
+
+</body>
+</html>
